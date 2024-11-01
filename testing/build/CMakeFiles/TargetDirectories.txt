@@ -1,0 +1,3 @@
+/home/jay/Desktop/compiler/testing/build/CMakeFiles/test.dir
+/home/jay/Desktop/compiler/testing/build/CMakeFiles/edit_cache.dir
+/home/jay/Desktop/compiler/testing/build/CMakeFiles/rebuild_cache.dir
