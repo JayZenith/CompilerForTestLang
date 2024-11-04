@@ -3,6 +3,7 @@
 
 CMakeFiles/test.dir/src/main.cpp.o
  /home/jay/Desktop/compiler/testing/src/main.cpp
+ /home/jay/Desktop/compiler/testing/src/tokenize.hpp
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

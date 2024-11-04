@@ -4,16 +4,19 @@
 #include <sstream>
 #include <vector>
 #include <optional>
+#include <chrono>
 
+#include "./tokenization.hpp"
 
-void readFile(std::string& contents, const std::string& file){
+void readFile(std::string& contents, const std::string& fileName){
     std::stringstream contents_stream;
-    std::fstream input(file, std::ios::in);
+    std::fstream input(fileName, std::ios::in);
     contents_stream << input.rdbuf();
     contents = contents_stream.str();
-    input.close();
-} 
+}
 
+
+auto start = std::chrono::steady_clock::now();
 
 int main(int argc, char* argv[]){
     /*
@@ -27,7 +30,12 @@ int main(int argc, char* argv[]){
 
     std::string contents;
     readFile(contents, "../input.test");
+    Tokenizer tokenize(contents);
+    tokenize.tokenize();
 
-    std::cout << contents;
-
+    auto end = std::chrono::steady_clock::now();
+    auto diff = end - start;
+    std::cout <<  std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
+    return EXIT_SUCCESS;
 }
+
