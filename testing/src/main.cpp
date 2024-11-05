@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "./tokenization.hpp"
+#include "./parser.hpp"
 
 void readFile(std::string& contents, const std::string& fileName){
     std::stringstream contents_stream;
@@ -31,7 +32,9 @@ int main(int argc, char* argv[]){
     std::string contents;
     readFile(contents, "../input.test");
     Tokenizer tokenize(contents);
-    tokenize.tokenize();
+    std::vector<TokensStruct> tokens = tokenize.tokenize();
+    Parser parser(tokens);
+    parser.parse();
 
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;

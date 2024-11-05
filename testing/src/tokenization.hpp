@@ -32,7 +32,7 @@ public:
             
                 
                 if(isalpha(peak().value())){
-                    std::cout << peak().value() << std::endl;
+                    //std::cout << peak().value() << std::endl;
                     buf.push_back(consume()); //PUSH VALUE AND INCREMENT COUNT
                     if(buf == "leave"){
                         tokens.push_back({.type=Tokens::leave});
@@ -49,7 +49,7 @@ public:
                     continue;
                 }
                 else if(isdigit(peak().value())){
-                    std::cout << "made it" << std::endl;
+                   
                     while(isdigit(peak().value())){
                         buf.push_back(consume()); //PUSH VALUE AND INCREMENT COUNT
                     }
@@ -79,7 +79,7 @@ public:
         }
 
         idx = 0;
-        std::cout << "Here" << std::endl;
+       
         return tokens;
     }
 
