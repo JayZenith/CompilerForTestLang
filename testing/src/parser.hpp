@@ -20,7 +20,7 @@ public:
         {}
 
 
-    std::optional<NodeRoot> parse(){
+    NodeRoot parse(){
         NodeRoot root;
         
         while(peak().has_value()){

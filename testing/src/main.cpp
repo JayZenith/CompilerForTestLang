@@ -8,6 +8,7 @@
 
 #include "./tokenization.hpp"
 #include "./parser.hpp"
+#include "./generate.hpp"
 
 void readFile(std::string& contents, const std::string& fileName){
     std::stringstream contents_stream;
@@ -34,7 +35,11 @@ int main(int argc, char* argv[]){
     Tokenizer tokenize(contents);
     std::vector<TokensStruct> tokens = tokenize.tokenize();
     Parser parser(tokens);
-    parser.parse();
+    NodeRoot root = parser.parse();
+    Generator generator(root);
+    std::string theFile = generator.generate();
+    std::cout << theFile << std::endl;
+
 
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
