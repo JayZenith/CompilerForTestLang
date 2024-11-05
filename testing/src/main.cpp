@@ -4,21 +4,17 @@
 #include <sstream>
 #include <vector>
 #include <optional>
-#include <chrono>
 
-#include "./tokenization.hpp"
+#include "./tokenize.hpp"
 #include "./parser.hpp"
-#include "./generate.hpp"
 
-void readFile(std::string& contents, const std::string& fileName){
-    std::stringstream contents_stream;
-    std::fstream input(fileName, std::ios::in);
-    contents_stream << input.rdbuf();
-    contents = contents_stream.str();
+void readFile(std::string& contents, std::string arg){
+    std::stringstream contentsStream;
+    std::fstream input(arg, std::ios::in);
+    contentsStream << input.rdbuf();
+    contents = contentsStream.str();
 }
 
-
-auto start = std::chrono::steady_clock::now();
 
 int main(int argc, char* argv[]){
     /*
@@ -30,20 +26,18 @@ int main(int argc, char* argv[]){
     }
     */
 
-    std::string contents;
-    readFile(contents, "../input.test");
-    Tokenizer tokenize(contents);
-    std::vector<TokensStruct> tokens = tokenize.tokenize();
-    Parser parser(tokens);
-    NodeRoot root = parser.parse();
-    Generator generator(root);
-    std::string theFile = generator.generate();
-    std::cout << theFile << std::endl;
+   std::string contents;
+   readFile(contents, "../input.test");
+   Tokenize tokenizer(contents);
+   std::vector<TokensStruct> tokens = tokenizer.tokenize();
+   Parser parser(tokens);
+   NodeRoot root = parser.parse();
+   std::cout << "here: " << root.expr.intVal.value.value() << std::endl;
 
+   
+   
+ 
 
-    auto end = std::chrono::steady_clock::now();
-    auto diff = end - start;
-    std::cout <<  std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
     return EXIT_SUCCESS;
 }
 
