@@ -7,6 +7,7 @@
 
 #include "./tokenize.hpp"
 #include "./parser.hpp"
+#include "./generate.hpp"
 
 void readFile(std::string& contents, std::string arg){
     std::stringstream contentsStream;
@@ -33,10 +34,19 @@ int main(int argc, char* argv[]){
    Parser parser(tokens);
    NodeRoot root = parser.parse();
    std::cout << "here: " << root.expr.intVal.value.value() << std::endl;
+   Generate generator(root);
+   std::string assembly = generator.generateAssembly();
+
+   std::cout << assembly << std::endl;
+
+
+   std::fstream openFile("test.asm", std::ios::out);
+   openFile << assembly;
+
+   system("nasm -felf64 test.asm");
+   //system("ld -o test test.o");
 
    
-   
- 
 
     return EXIT_SUCCESS;
 }
