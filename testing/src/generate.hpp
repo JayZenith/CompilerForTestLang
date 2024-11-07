@@ -1,23 +1,24 @@
 #pragma once
 
-#include "./parser.hpp"
 
-class Generate{
+class Generator{
+
 public:
-    Generate(NodeRoot&nodeRoot)
-        : theRoot(std::move(nodeRoot))
-    {}
+    Generator(NodeRoot&x)
+        : root(std::move(x))
+        {}
 
-    std::string generateAssembly(){
+    std::string generate(){
         std::stringstream strm;
-        strm << "global _start" << "\n"
-        << "_start:" << "\n"
-        << "    mov rax, 60\n" 
-        << "    mov rdi, " << theRoot.expr.intVal.value.value() << "\n"
-        << "    syscall";
+        strm << "global _start\n" << "_start:\n" 
+             << "    mov rax, 60\n" << "    mov rdi, " 
+             << root.expr.intVal.value.value() << "\n"
+             << "    syscall";
         return strm.str();
     }
 
 private:
-    NodeRoot theRoot;
+    NodeRoot root;
+
+
 };

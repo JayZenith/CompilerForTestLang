@@ -9,11 +9,12 @@
 #include "./parser.hpp"
 #include "./generate.hpp"
 
-void readFile(std::string& contents, std::string arg){
-    std::stringstream contentsStream;
+
+void readFile(std::string&contents, std::string arg){
     std::fstream input(arg, std::ios::in);
-    contentsStream << input.rdbuf();
-    contents = contentsStream.str();
+    std::stringstream strm;
+    strm << input.rdbuf();
+    contents = strm.str();
 }
 
 
@@ -30,22 +31,19 @@ int main(int argc, char* argv[]){
    std::string contents;
    readFile(contents, "../input.test");
    Tokenize tokenizer(contents);
-   std::vector<TokensStruct> tokens = tokenizer.tokenize();
+   std::vector<TokensStruct>tokens = tokenizer.tokenize();
    Parser parser(tokens);
    NodeRoot root = parser.parse();
-   std::cout << "here: " << root.expr.intVal.value.value() << std::endl;
-   Generate generator(root);
-   std::string assembly = generator.generateAssembly();
+   Generator generator(root);
+   //std::cout << "here: " << root.expr.intVal.value.value() << std::endl;
+   std::string assembly = generator.generate();
+   std::fstream out("test.asm", std::ios::out);
+   out << assembly;
 
-   std::cout << assembly << std::endl;
 
+   //system("nasm -felf64 test.asm");
 
-   std::fstream openFile("test.asm", std::ios::out);
-   openFile << assembly;
-
-   system("nasm -felf64 test.asm");
-   //system("ld -o test test.o");
-
+  
    
 
     return EXIT_SUCCESS;

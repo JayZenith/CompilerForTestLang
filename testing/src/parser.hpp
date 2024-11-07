@@ -1,80 +1,70 @@
-#pragma once 
+#pragma once
+
 
 #include "./tokenize.hpp"
+
 
 struct NodeExpr{
     TokensStruct intVal;
 };
 
-
-struct NodeRoot{ //The goal is to place the desired expression in root and return the root 
+struct NodeRoot{
     NodeExpr expr;
 };
 
 class Parser{
 
 public:
-    Parser(std::vector<TokensStruct>&tokens)
-        : tokens(std::move(tokens))
+    Parser(std::vector<TokensStruct> &x)
+        : tokens(std::move(x))
         {}
 
     NodeRoot parse(){
-        NodeRoot node_root = {};
-        while(peak().has_value()){
-            if(peak().value().type == Tokens::leave){ ///should be first 
+        NodeRoot nodeRoot;
+
+        while(peek().has_value()){
+            if(peek().value().type == Tokens::leave){
+                eat();
+                continue;
+            }
+            else if(peek().value().type == Tokens::lp){
+                eat();
+                continue;
+            }
+            else if(peek().value().type == Tokens::intVal){
+                nodeRoot.expr = NodeExpr{ peek().value() };
+                eat();
+                continue;
+            }
+            else if(peek().value().type == Tokens::rp){
+                eat();
+                continue;
+            }
+            else if(peek().value().type == Tokens::semi){
                 eat();
                 continue;
             }
             
-            if(peak().value().type == Tokens::lp){ //(Expr) parantheses correct ?
-                if(peak(2).value().type == Tokens::rp){ //Just out of curiosity
-                    eat();
-                    continue;
-
-                } else {
-                    std::cerr << "Parantheses dont match" << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-            }
-
-            if(peak().value().type == Tokens::intVal){
-                node_root.expr = NodeExpr { peak().value() }; 
-                eat();
-                continue;
-            }
-
-            if(peak().value().type == Tokens::rp){ //still need to read this paranthese
-                eat();
-                continue;
-            }
-
-            if(peak().value().type == Tokens::semi){ //still need to read this paranthese
-                eat();
-                continue;
-            }
-
         }
-
         idx = 0;
-        return node_root;
+        return nodeRoot;
+
     }
-    
 
 private:
-     std::vector<TokensStruct> tokens;
-     size_t idx = 0;
+    std::vector<TokensStruct> tokens;
 
-    std::optional<TokensStruct> peak(int ahead = 0){ //we peak to see if character exists 
-        if(idx + ahead >= tokens.size()){
+    std::optional<TokensStruct> peek(int offset=0){
+        if(idx + offset > tokens.size() - 1){
             return {};
-        }
-        else{
-            return tokens.at(idx + ahead);
+        } else { 
+            return tokens.at(idx+offset);
         }
     }
 
-    TokensStruct eat(){ //eat the character (place in buffer), and incremenet index 
-        return tokens[idx++]; 
+    TokensStruct eat(){
+        return tokens.at(idx++);
     }
 
+    size_t idx = 0;
 };
