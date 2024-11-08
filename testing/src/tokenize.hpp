@@ -25,19 +25,18 @@ public:
         std::string buf = "";
 
         while(peek().has_value()){ //leave(8);
-            buf.clear();
             if(isalpha(peek().value())){ //leave 
                 buf.push_back(eat());
                 if(buf == "leave"){
                     tokens.push_back({ .type = Tokens::leave});
-                    //buf.clear();
+                    buf.clear();
                     continue;
                 }
             }
             else if(peek().value() == '('){
                 buf.push_back(eat());
                 tokens.push_back({ .type = Tokens::lp});
-                //buf.clear();
+                buf.clear();
                 continue;
             }
             else if(isdigit(peek().value())){
@@ -45,19 +44,19 @@ public:
                     buf.push_back(eat());
                 }
                 tokens.push_back({ .type = Tokens::intVal, .value=buf});
-                //buf.clear();
+                buf.clear();
                 continue;
             }
             else if(peek().value() == ')'){
                 buf.push_back(eat());
                 tokens.push_back({ .type = Tokens::rp});
-                //buf.clear();
+                buf.clear();
                 continue;
             }
             else if(peek().value() == ';'){
                 buf.push_back(eat());
                 tokens.push_back({ .type = Tokens::semi});
-                //buf.clear();
+                buf.clear();
                 continue;
             }
         }
@@ -65,8 +64,6 @@ public:
         idx = 0;
         return tokens;
     }
-
-
 
 private:
     std::string theContents = "";

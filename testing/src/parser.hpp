@@ -23,32 +23,39 @@ public:
         NodeRoot nodeRoot;
 
         while(peek().has_value()){
-            if(peek().value().type == Tokens::leave){
+            //leave(expr);
+            if(peek().value().type == Tokens::leave && peek(1).has_value() 
+                && peek(1).value().type == Tokens::lp){
                 eat();
-                continue;
-            }
-            else if(peek().value().type == Tokens::lp){
                 eat();
-                continue;
+                
+                if(peek().has_value() && peek().value().type == Tokens::intVal){ 
+                    nodeRoot.expr = NodeExpr{ peek().value() };
+                    eat();
+                    if(peek().has_value() && peek().value().type == Tokens::rp){ 
+                        eat();
+                        if(peek().has_value() && peek().value().type == Tokens::semi){
+                            eat();
+                            //continue;
+                        } else { //leave()
+                            std::cerr << "Missing semicolon" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                    } else { //leave(expr;
+                        std::cerr << "Missing closing parantheses" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                } else { //leave();
+                    std::cerr << "Missing argument for leave" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            } else { //leaveexpr);
+                std::cerr << "Missing opening parantheses" << std::endl;
+                exit(EXIT_FAILURE);
             }
-            else if(peek().value().type == Tokens::intVal){
-                nodeRoot.expr = NodeExpr{ peek().value() };
-                eat();
-                continue;
-            }
-            else if(peek().value().type == Tokens::rp){
-                eat();
-                continue;
-            }
-            else if(peek().value().type == Tokens::semi){
-                eat();
-                continue;
-            }
-            
         }
         idx = 0;
         return nodeRoot;
-
     }
 
 private:
