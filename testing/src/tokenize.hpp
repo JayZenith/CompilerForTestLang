@@ -6,7 +6,7 @@
 #include <string>
 
 
-enum class Tokens{ leave, lp, intVal, rp, semi};
+enum class Tokens{ leave, lp, intVal, rp, semi, ident};
 
 struct TokensStruct{
     Tokens type;
@@ -32,6 +32,13 @@ public:
                     buf.clear();
                     continue;
                 }
+                /*
+                else{
+                    tokens.push_back({ .type = Tokens::ident, .value=buf});
+                    buf.clear();
+                    continue;
+                }
+                */
             }
             else if(peek().value() == '('){
                 buf.push_back(eat());
