@@ -32,9 +32,10 @@ int main(int argc, char* argv[]){
    readFile(contents, "../input.test");
    Tokenize tokenizer(contents);
    std::vector<TokensStruct>tokens = tokenizer.tokenize();
-   Parser parser(tokens);
-   std::optional<NodeExpr> expr = parser.parse();
    std::cout << "hi";
+   //Parser parser(tokens);
+   //std::optional<NodeExpr> expr = parser.parse();
+   //std::cout << "hi";
    //std::cout << expr.value().value().int_lit.value();
    //Generator generator(expr);
 

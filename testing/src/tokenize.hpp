@@ -28,6 +28,7 @@ public:
             if(isalpha(peek().value())){ 
                 while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
                     buf.push_back(eat()); //push onto buffer and increment 
+                }
                     if(buf == "leave"){
                         tokens.push_back({ .type = Tokens::leave});
                         buf.clear();
@@ -41,9 +42,13 @@ public:
                         buf.clear();
                         continue;
                     }
-    
-
-                }
+                //}
+            }
+            else if(isspace(peek().value())){
+                eat();
+                //tokens.push_back({ .type = Tokens::rp});
+                buf.clear();
+                continue;
             }
             else if(peek().value() == '('){
                 buf.push_back(eat());

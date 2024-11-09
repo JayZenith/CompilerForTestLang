@@ -1,1 +1,2 @@
-leave(81);
+let x = 8;
+leave(8);

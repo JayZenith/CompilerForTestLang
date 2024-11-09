@@ -39,6 +39,7 @@ struct NodeRoot{  //[program]
 };
 
 class Parser{
+/*
 
 public:
     Parser(std::vector<TokensStruct> &x)
@@ -68,14 +69,7 @@ public:
                 })
                 
                     //eat();
-                    /*
-                    if(peek().value().type == Tokens::intVal){
-                        auto test = NodeExpr { .var=NodeExprIntLit { .int_lit = eat() } };
-                    } else {
-                        auto test = NodeExpr { .var=NodeExprIdent { .ident = eat() } };
-                    }
-                    */
-                   
+         
                     
                     if(peek().has_value() && peek().value().type == Tokens::rp){ 
                         eat();
@@ -128,4 +122,5 @@ private:
     }
 
     size_t idx = 0;
+    */
 };
