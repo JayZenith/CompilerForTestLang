@@ -12,7 +12,7 @@ public:
         std::stringstream strm;
         strm << "global _start\n" << "_start:\n" 
              << "    mov rax, 60\n" << "    mov rdi, " 
-             << root.value().intVal.value.value() << "\n"
+             //<< root.value().intVal.value.value() << "\n"
              << "    syscall";
         return strm.str();
     }

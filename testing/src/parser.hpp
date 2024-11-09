@@ -14,8 +14,8 @@ struct NodeExprIdent{
 
 
 struct NodeExpr{ //[expr] is either int_lit or ident
-    TokensStruct intVal;
-    //std::variant<NodeExprIntLit, NodeExprIdent> var;
+    //TokensStruct intVal;
+    std::variant<NodeExprIntLit, NodeExprIdent> var;
 };
 
 
@@ -33,8 +33,8 @@ struct NodeStmt{ //statements are either leavepexpr] or let ident=[expr];
 };
 
 struct NodeRoot{  //[program]
-    NodeExpr expr;
-    //std::vector<NodeStmt> stmts; //[statements]
+    //NodeExpr expr;
+    std::vector<NodeStmt> stmts; //[statements]
 
 };
 
@@ -47,29 +47,26 @@ public:
 
     std::optional<NodeExpr> parse_expr(){
         if(peek().value().type == Tokens::intVal){
-            return NodeExpr{ eat() };
-        } else {
+            return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } };
+        }
+        else if(peek().value().type == Tokens::ident){
+            return NodeExpr{ .var = NodeExprIdent { .ident = eat() } };
+        }
+        else {
             return {};
         }
     }
 
-    std::optional<NodeExpr> parse(){
-        std::optional<NodeExpr> nodeExpr;
-
-        while(peek().has_value()){
-            //leave(expr);
-            
-            if(peek().value().type == Tokens::leave && peek(1).has_value() 
-                && peek(1).value().type == Tokens::lp){
+    std::optional<NodeStmt> parse_stmt(){
+        if(peek().value().type == Tokens::leave && peek(1).has_value() 
+            && peek(1).value().type == Tokens::lp){
                 eat();
                 eat();
+                NodeStmtLeave stmt_leave;
+                if(auto node_expr = parse_expr(){
+                    stmt_leave = {.expr = node_expr.value()};
+                })
                 
-                //should now approach a int_val or ident 
-                //if(peek().has_value() && peek().value().type == Tokens::intVal || peek().value().type == Tokens::ident){ 
-                if(peek().has_value()){
-                    nodeExpr = parse_expr();
-               
-                    
                     //eat();
                     /*
                     if(peek().value().type == Tokens::intVal){
@@ -101,6 +98,15 @@ public:
                 std::cerr << "Missing opening parantheses" << std::endl;
                 exit(EXIT_FAILURE);
             }
+        return NodeStmt { .var = stmt_leave };
+    }
+
+    std::optional<NodeExpr> parse(){
+        std::optional<NodeExpr> nodeExpr;
+
+        while(peek().has_value()){
+            //leave(expr);
+            
         }
         idx = 0;
         return nodeExpr;

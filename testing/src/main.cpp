@@ -34,13 +34,14 @@ int main(int argc, char* argv[]){
    std::vector<TokensStruct>tokens = tokenizer.tokenize();
    Parser parser(tokens);
    std::optional<NodeExpr> expr = parser.parse();
-   std::cout << expr.value().intVal.value.value();
-   Generator generator(expr);
+   std::cout << "hi";
+   //std::cout << expr.value().value().int_lit.value();
+   //Generator generator(expr);
 
    
-   std::string assembly = generator.generate();
-   std::fstream out("test.asm", std::ios::out);
-   out << assembly;
+   //std::string assembly = generator.generate();
+   //std::fstream out("test.asm", std::ios::out);
+   //out << assembly;
 
 
    //system("nasm -felf64 test.asm");

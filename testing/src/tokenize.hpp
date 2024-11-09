@@ -6,7 +6,7 @@
 #include <string>
 
 
-enum class Tokens{ leave, lp, intVal, rp, semi, ident};
+enum class Tokens{ leave, lp, intVal, rp, semi, let, ident, eq};
 
 struct TokensStruct{
     Tokens type;
@@ -25,20 +25,25 @@ public:
         std::string buf = "";
 
         while(peek().has_value()){ //leave(8);
-            if(isalpha(peek().value())){ //leave 
-                buf.push_back(eat());
-                if(buf == "leave"){
-                    tokens.push_back({ .type = Tokens::leave});
-                    buf.clear();
-                    continue;
+            if(isalpha(peek().value())){ 
+                while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
+                    buf.push_back(eat()); //push onto buffer and increment 
+                    if(buf == "leave"){
+                        tokens.push_back({ .type = Tokens::leave});
+                        buf.clear();
+                        continue;
+                    } else if(buf == "let"){
+                        tokens.push_back({ .type = Tokens::let});
+                        buf.clear();
+                        continue;
+                    } else { //.value will hold the idnetifier symbol 
+                        tokens.push_back({ .type = Tokens::ident, .value=buf });
+                        buf.clear();
+                        continue;
+                    }
+    
+
                 }
-                /*
-                else{
-                    tokens.push_back({ .type = Tokens::ident, .value=buf});
-                    buf.clear();
-                    continue;
-                }
-                */
             }
             else if(peek().value() == '('){
                 buf.push_back(eat());
@@ -63,6 +68,12 @@ public:
             else if(peek().value() == ';'){
                 buf.push_back(eat());
                 tokens.push_back({ .type = Tokens::semi});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '='){
+                buf.push_back(eat());
+                tokens.push_back({ .type = Tokens::eq});
                 buf.clear();
                 continue;
             }
