@@ -33,16 +33,15 @@ int main(int argc, char* argv[]){
    Tokenize tokenizer(contents);
    std::vector<TokensStruct>tokens = tokenizer.tokenize();
    std::cout << "hi";
-   //Parser parser(tokens);
-   //std::optional<NodeExpr> expr = parser.parse();
+   Parser parser(tokens);
+   std::optional<NodeRoot> prog = parser.parse_prog();
    //std::cout << "hi";
    //std::cout << expr.value().value().int_lit.value();
-   //Generator generator(expr);
+   Generator generator(prog.value());
 
    
-   //std::string assembly = generator.generate();
-   //std::fstream out("test.asm", std::ios::out);
-   //out << assembly;
+   std::fstream out("test.asm", std::ios::out);
+   out << generator.generate_prog();
 
 
    //system("nasm -felf64 test.asm");

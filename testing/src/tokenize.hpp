@@ -5,13 +5,11 @@
 #include <vector>
 #include <string>
 
-
 enum class Tokens{ leave, lp, intVal, rp, semi, let, ident, eq};
 
 struct TokensStruct{
     Tokens type;
     std::optional<std::string> value {};
-
 };
 
 class Tokenize{
@@ -29,20 +27,19 @@ public:
                 while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
                     buf.push_back(eat()); //push onto buffer and increment 
                 }
-                    if(buf == "leave"){
-                        tokens.push_back({ .type = Tokens::leave});
-                        buf.clear();
-                        continue;
-                    } else if(buf == "let"){
-                        tokens.push_back({ .type = Tokens::let});
-                        buf.clear();
-                        continue;
-                    } else { //.value will hold the idnetifier symbol 
-                        tokens.push_back({ .type = Tokens::ident, .value=buf });
-                        buf.clear();
-                        continue;
-                    }
-                //}
+                if(buf == "leave"){
+                    tokens.push_back({ .type = Tokens::leave});
+                    buf.clear();
+                    continue;
+                } else if(buf == "let"){
+                    tokens.push_back({ .type = Tokens::let});
+                    buf.clear();
+                    continue;
+                } else { //.value will hold the idnetifier symbol 
+                    tokens.push_back({ .type = Tokens::ident, .value=buf });
+                    buf.clear();
+                    continue;
+                }
             }
             else if(isspace(peek().value())){
                 eat();
@@ -83,7 +80,6 @@ public:
                 continue;
             }
         }
-    
         idx = 0;
         return tokens;
     }

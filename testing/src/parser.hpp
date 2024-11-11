@@ -1,7 +1,6 @@
 #pragma once
 
 #include <variant>
-
 #include "./tokenize.hpp"
 
 struct NodeExprIntLit{
@@ -12,23 +11,21 @@ struct NodeExprIdent{
     TokensStruct ident;
 };
 
-
 struct NodeExpr{ //[expr] is either int_lit or ident
     //TokensStruct intVal;
     std::variant<NodeExprIntLit, NodeExprIdent> var;
 };
 
-
-struct NodeStmtLeave{  //leave returns an expression
-    NodeExpr leave;
+struct NodeStmtLeave{  
+    NodeExpr expr;
 };
 
-struct NodeStmtLet{ //let returns an expression but can be an ident 
+struct NodeStmtLet{ 
     TokensStruct ident;
     NodeExpr expr;
 };
 
-struct NodeStmt{ //statements are either leavepexpr] or let ident=[expr];
+struct NodeStmt{ 
     std::variant<NodeStmtLeave, NodeStmtLet> var;
 };
 
@@ -39,13 +36,14 @@ struct NodeRoot{  //[program]
 };
 
 class Parser{
-/*
-
 public:
+
     Parser(std::vector<TokensStruct> &x)
         : tokens(std::move(x))
         {}
 
+    //Can be either expr or ident 
+    //so NodeExpr is a variant that holds specifically either
     std::optional<NodeExpr> parse_expr(){
         if(peek().value().type == Tokens::intVal){
             return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } };
@@ -57,58 +55,86 @@ public:
             return {};
         }
     }
-
+    
+    //NodeStmt is a variant of the instruction types 
+    //
     std::optional<NodeStmt> parse_stmt(){
+        //check if a leave(expr);
         if(peek().value().type == Tokens::leave && peek(1).has_value() 
             && peek(1).value().type == Tokens::lp){
+            eat();
+            eat();
+            NodeStmtLeave stmt_leave;
+            /*
+            struct NodeStmtLeave{  
+                NodeExpr expr;
+            };
+            */
+            if(auto node_expr = parse_expr()){
+                stmt_leave = {.expr = node_expr.value()};
+                //std::cout << "hi";
+            }
+            
+            //should eat to move index to next peek 
+            eat();
+            if(peek().has_value() && peek().value().type == Tokens::rp){ 
                 eat();
+            }
+            if(peek().has_value() && peek().value().type == Tokens::semi){
                 eat();
-                NodeStmtLeave stmt_leave;
-                if(auto node_expr = parse_expr(){
-                    stmt_leave = {.expr = node_expr.value()};
-                })
-                
-                    //eat();
-         
-                    
-                    if(peek().has_value() && peek().value().type == Tokens::rp){ 
-                        eat();
-                        if(peek().has_value() && peek().value().type == Tokens::semi){
-                            eat();
-                            //continue;
-                        } else { //leave()
-                            std::cerr << "Missing semicolon" << std::endl;
-                            exit(EXIT_FAILURE);
-                        }
-                    } else { //leave(expr;
-                        std::cerr << "Missing closing parantheses" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                } else { //leave();
-                    std::cerr << "Missing argument for leave" << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-            } else { //leaveexpr);
-                std::cerr << "Missing opening parantheses" << std::endl;
+            }
+            return NodeStmt { .var = stmt_leave };
+
+        } else if (peek().has_value() && peek().value().type == Tokens::let &&
+            peek(1).has_value() && peek(1).value().type == Tokens::ident && 
+            peek(2).has_value() && peek(2).value().type == Tokens::eq){
+            eat(); //consume let
+            auto stmt_let = NodeStmtLet { .ident = eat() }; //consume ident 
+            eat(); //consume eq 
+            /*
+            struct NodeStmtLet{ 
+                TokensStruct ident;
+                NodeExpr expr;
+            };
+            I stored identifier but now parsing for intVal 
+            */
+            if (auto expr = parse_expr()){
+                stmt_let.expr = expr.value();
+                eat(); //dont we eat to look for semi?
+            } else { //not an int val or ident?
+                std::cerr << "Invalid expression" << std::endl;
                 exit(EXIT_FAILURE);
             }
-        return NodeStmt { .var = stmt_leave };
+            if (peek().has_value() && peek().value().type == Tokens::semi){
+                //std::cerr << "Expected ;" << std::endl;
+                //exit(EXIT_FAILURE);
+                eat();
+            }
+            return NodeStmt { .var = stmt_let };
+        } else{
+            return {};
+        }
+        
     }
 
-    std::optional<NodeExpr> parse(){
-        std::optional<NodeExpr> nodeExpr;
+ 
+    std::optional<NodeRoot> parse_prog(){ 
+        NodeRoot prog;
+        while (peek().has_value()){ 
+           
+            if(auto stmt = parse_stmt()){
+                prog.stmts.push_back(stmt.value());
 
-        while(peek().has_value()){
-            //leave(expr);
-            
+            } else {
+                std::cerr << "Invalid statement" << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
-        idx = 0;
-        return nodeExpr;
+        return prog;
     }
 
 private:
     std::vector<TokensStruct> tokens;
-
     std::optional<TokensStruct> peek(int offset=0){
         if(idx + offset > tokens.size() - 1){
             return {};
@@ -122,5 +148,4 @@ private:
     }
 
     size_t idx = 0;
-    */
 };
