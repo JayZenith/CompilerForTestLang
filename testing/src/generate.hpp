@@ -1,5 +1,6 @@
 #pragma once
 
+#include<unordered_map>
 
 class Generator{
 
@@ -15,11 +16,23 @@ public:
 
             void operator()(const NodeExprIntLit& expr_int_lit){
                 gen->strm << "    mov rax, " << expr_int_lit.int_lit.value.value() << "\n";
-                gen->strm << "    push rax\n"; 
+                gen->push("rax");
+                //gen->strm << "    push rax\n"; 
             }
 
             void operator()(const NodeExprIdent& expr_ident){
+                /*
+                if(!(gen->varsMap.find(expr_ident.ident.value.value()) == gen->varsMap.end())){
+                    std::cerr << "Undeclared identifier: " << expr_ident.ident.value.value() << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                */
+                const auto& var = gen->varsMap.at(expr_ident.ident.value.value());
+                std::stringstream offset {};
+                offset << "QWORD [rsp + " << (gen->stackSize - var.stackLoc - 1) * 8 << "]\n";
+                gen->push(offset.str());
                 
+
             }
         };
 
@@ -35,13 +48,28 @@ public:
             void operator()(const NodeStmtLeave& stmt_leave) const {
                 gen->gen_expr(stmt_leave.expr); //calls function to further advance assembly
                 gen->strm << "    mov rax, 60\n";
-                gen->strm << "    pop rdi\n";
+                gen->pop("rdi");
+                //gen->strm << "    pop rdi\n";
                 gen->strm << "    syscall\n"; 
 
             }
 
             void operator()(const NodeStmtLet& stmt_let){
                 
+                /*
+                if(gen->varsMap.contains(stmt_let.ident.value.value())){
+                    std::cerr << "Identifier already declared: " << stmt_let.ident.value.value() << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                */
+                //put in map
+                gen->varsMap.insert({stmt_let.ident.value.value(), Var{.stackLoc = gen->stackSize} });
+                //put in stack
+                for (auto i : gen->varsMap)
+                std::cout << "\nyo: " << i.first << "\n" << std::endl;
+                
+                gen->gen_expr(stmt_let.expr);
+               
             }
         };
         StmtVisitor visitor { .gen = this }; //deconstruct and gen is a pointer member as is "this"
@@ -61,15 +89,33 @@ public:
 
 
         //exit syscall return 0
-        /*
+        
         strm << "    mov rax, 60\n";
         strm << "    mov rdi, 0\n";
         strm << "    syscall\n"; 
-        */
+        
         return strm.str();
     }
 
 private:
+    void push(const std::string& reg){
+        strm << "    push " << reg << "\n";
+        stackSize++;
+    }
+
+    void pop(const std::string& reg){
+        strm << "    pop " << reg << "\n";
+        stackSize--;
+    }
+
+    struct Var{
+        //will later include type to make it statically typed
+        size_t stackLoc; //to check pos in stack
+
+    };
+
     std::stringstream strm;
     const NodeRoot root;
+    size_t stackSize = 0;
+    std::unordered_map<std::string, Var> varsMap {};
 };

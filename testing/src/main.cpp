@@ -37,6 +37,7 @@ int main(int argc, char* argv[]){
    std::optional<NodeRoot> prog = parser.parse_prog();
    //std::cout << "hi";
    //std::cout << expr.value().value().int_lit.value();
+   std::cout << "hi";
    Generator generator(prog.value());
 
    
