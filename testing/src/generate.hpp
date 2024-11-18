@@ -20,14 +20,14 @@ public:
                 //gen->strm << "    push rax\n"; 
             }
 
-            void operator()(const NodeExprIdent& expr_ident){
+            void operator()(const NodeExprIDENTIFIER& expr_IDENTIFIER){
                 /*
-                if(!(gen->varsMap.find(expr_ident.ident.value.value()) == gen->varsMap.end())){
-                    std::cerr << "Undeclared identifier: " << expr_ident.ident.value.value() << std::endl;
+                if(!(gen->varsMap.find(expr_IDENTIFIER.IDENTIFIER.value.value()) == gen->varsMap.end())){
+                    std::cerr << "Undeclared IDENTIFIERifier: " << expr_IDENTIFIER.IDENTIFIER.value.value() << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 */
-                const auto& var = gen->varsMap.at(expr_ident.ident.value.value());
+                const auto& var = gen->varsMap.at(expr_IDENTIFIER.IDENTIFIER.value.value());
                 std::stringstream offset {};
                 offset << "QWORD [rsp + " << (gen->stackSize - var.stackLoc - 1) * 8 << "]\n";
                 gen->push(offset.str());
@@ -45,8 +45,8 @@ public:
         struct StmtVisitor{
             Generator* gen;
             //will call operator based on correct parameter 
-            void operator()(const NodeStmtLeave& stmt_leave) const {
-                gen->gen_expr(stmt_leave.expr); //calls function to further advance assembly
+            void operator()(const NodeStmtLEAVE& stmt_LEAVE) const {
+                gen->gen_expr(stmt_LEAVE.expr); //calls function to further advance assembly
                 gen->strm << "    mov rax, 60\n";
                 gen->pop("rdi");
                 //gen->strm << "    pop rdi\n";
@@ -54,21 +54,21 @@ public:
 
             }
 
-            void operator()(const NodeStmtLet& stmt_let){
+            void operator()(const NodeStmtLET& stmt_LET){
                 
                 /*
-                if(gen->varsMap.contains(stmt_let.ident.value.value())){
-                    std::cerr << "Identifier already declared: " << stmt_let.ident.value.value() << std::endl;
+                if(gen->varsMap.contains(stmt_LET.IDENTIFIER.value.value())){
+                    std::cerr << "IDENTIFIERifier already declared: " << stmt_LET.IDENTIFIER.value.value() << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 */
                 //put in map
-                gen->varsMap.insert({stmt_let.ident.value.value(), Var{.stackLoc = gen->stackSize} });
+                gen->varsMap.insert({stmt_LET.IDENTIFIER.value.value(), Var{.stackLoc = gen->stackSize} });
                 //put in stack
                 for (auto i : gen->varsMap)
                 std::cout << "\nyo: " << i.first << "\n" << std::endl;
                 
-                gen->gen_expr(stmt_let.expr);
+                gen->gen_expr(stmt_LET.expr);
                
             }
         };

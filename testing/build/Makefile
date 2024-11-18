@@ -54,7 +54,7 @@ CMAKE_COMMAND = /usr/bin/cmake
 RM = /usr/bin/cmake -E rm -f
 
 # Escaping for special characters.
-EQUALS = =
+EQUALUALS = =
 
 # The top-level source directory on which CMake was run.
 CMAKE_SOURCE_DIR = /home/jay/Desktop/compiler/testing
@@ -153,8 +153,8 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
-# Help Target
-help:
+# HeLEFT_PAREN Target
+heLEFT_PAREN:
 	@echo "The following are some of the valid targets for this Makefile:"
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
@@ -165,7 +165,7 @@ help:
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
-.PHONY : help
+.PHONY : heLEFT_PAREN
 
 
 

@@ -17,7 +17,6 @@ void readFile(std::string&contents, std::string arg){
     contents = strm.str();
 }
 
-
 int main(int argc, char* argv[]){
     /*
     if (argc < 2){
@@ -31,9 +30,9 @@ int main(int argc, char* argv[]){
    std::string contents;
    readFile(contents, "../input.test");
    Tokenize tokenizer(contents);
-   std::vector<TokensStruct>tokens = tokenizer.tokenize();
+   std::vector<Token>TokenType = tokenizer.tokenize();
    std::cout << "hi";
-   Parser parser(tokens);
+   Parser parser(TokenType);
    std::optional<NodeRoot> prog = parser.parse_prog();
    //std::cout << "hi";
    //std::cout << expr.value().value().int_lit.value();

@@ -51,7 +51,7 @@ CMAKE_COMMAND = /usr/bin/cmake
 RM = /usr/bin/cmake -E rm -f
 
 # Escaping for special characters.
-EQUALS = =
+EQUALUALS = =
 
 # The top-level source directory on which CMake was run.
 CMAKE_SOURCE_DIR = /home/jay/Desktop/compiler/testing
