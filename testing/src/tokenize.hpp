@@ -28,7 +28,9 @@ enum class TokenType{
 
 struct Token{
     TokenType type;
-    std::optional<std::string> value {};
+
+    std::optional<std::string> value {}; //holds literal
+    int theLine; //hold lne where instrruction is 
 };
 
 class Tokenize{
@@ -41,26 +43,31 @@ public:
         std::vector<Token> TokenType;
         std::string buf = "";
 
-        while(peek().has_value()){ //LEAVE(8);
+        while(peek().has_value()){ 
+            
             if(isalpha(peek().value())){ 
                 while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
                     buf.push_back(eat()); //push onto buffer and increment 
                 }
                 if(buf == "leave"){
-                    TokenType.push_back({ .type = TokenType::LEAVE});
+                    TokenType.push_back({ .type = TokenType::LEAVE, .theLine=line});
                     buf.clear();
                     continue;
                 } else if(buf == "let"){
-                    TokenType.push_back({ .type = TokenType::LET});
+                    TokenType.push_back({ .type = TokenType::LET, .theLine=line});
                     buf.clear();
                     continue;
                 } else { //.value will hold the idnetifier symbol 
-                    TokenType.push_back({ .type = TokenType::IDENTIFIER, .value=buf });
+                    TokenType.push_back({ .type = TokenType::IDENTIFIER, .value=buf, .theLine=line });
                     buf.clear();
                     continue;
                 }
             }
-            else if(isspace(peek().value())){
+            
+            else if(isspace(peek().value())){ //detects newlines
+                if(peek().value() == '\n'){
+                    line++; 
+                }
                 eat();
                 //TokenType.push_back({ .type = TokenType::RIGHT_PAREN});
                 buf.clear();
@@ -68,7 +75,7 @@ public:
             }
             else if(peek().value() == '('){
                 buf.push_back(eat());
-                TokenType.push_back({ .type = TokenType::LEFT_PAREN});
+                TokenType.push_back({ .type = TokenType::LEFT_PAREN, .theLine=line});
                 buf.clear();
                 continue;
             }
@@ -76,25 +83,25 @@ public:
                 while(isdigit(peek().value())){ //8, 24, 255
                     buf.push_back(eat());
                 }
-                TokenType.push_back({ .type = TokenType::NUMBER, .value=buf});
+                TokenType.push_back({ .type = TokenType::NUMBER, .value=buf, .theLine=line});
                 buf.clear();
                 continue;
             }
             else if(peek().value() == ')'){
                 buf.push_back(eat());
-                TokenType.push_back({ .type = TokenType::RIGHT_PAREN});
+                TokenType.push_back({ .type = TokenType::RIGHT_PAREN, .theLine=line});
                 buf.clear();
                 continue;
             }
             else if(peek().value() == ';'){
                 buf.push_back(eat());
-                TokenType.push_back({ .type = TokenType::SEMICOLON});
+                TokenType.push_back({ .type = TokenType::SEMICOLON, .theLine=line});
                 buf.clear();
                 continue;
             }
             else if(peek().value() == '='){
                 buf.push_back(eat());
-                TokenType.push_back({ .type = TokenType::EQUAL});
+                TokenType.push_back({ .type = TokenType::EQUAL, .theLine=line});
                 buf.clear();
                 continue;
             }
@@ -119,5 +126,6 @@ private:
     }
 
     size_t idx = 0;
+    int line = 1;
 
 };
