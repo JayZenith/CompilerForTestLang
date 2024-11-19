@@ -73,6 +73,11 @@ public:
                 buf.clear();
                 continue;
             }
+            else if(peek().value() == '"'){
+                string(buf, TokenType);
+                buf.clear();
+                continue;
+            }
             else if(peek().value() == '('){
                 buf.push_back(eat());
                 TokenType.push_back({ .type = TokenType::LEFT_PAREN, .theLine=line});
@@ -80,16 +85,49 @@ public:
                 continue;
             }
             else if(isdigit(peek().value())){
+                number(buf, TokenType);
+                /*
                 while(isdigit(peek().value())){ //8, 24, 255
                     buf.push_back(eat());
                 }
                 TokenType.push_back({ .type = TokenType::NUMBER, .value=buf, .theLine=line});
+                */
                 buf.clear();
                 continue;
             }
             else if(peek().value() == ')'){
                 buf.push_back(eat());
                 TokenType.push_back({ .type = TokenType::RIGHT_PAREN, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '{'){
+                buf.push_back(eat());
+                TokenType.push_back({ .type = TokenType::LEFT_BRACE, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '}'){
+                buf.push_back(eat());
+                TokenType.push_back({ .type = TokenType::RIGHT_BRACE, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '*'){
+                buf.push_back(eat());
+                TokenType.push_back({ .type = TokenType::STAR, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '+'){
+                buf.push_back(eat());
+                TokenType.push_back({ .type = TokenType::PLUS, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '-'){
+                buf.push_back(eat());
+                TokenType.push_back({ .type = TokenType::MINUS, .theLine=line});
                 buf.clear();
                 continue;
             }
@@ -178,6 +216,47 @@ private:
         return true;
     }
     
+    void string(std::string & bufa, std::vector<Token>&TokenType){
+        eat(); //eat the " but dont put in buffer 
+        while(peek().has_value() && peek(1).has_value() && peek(1).value() != '"'){
+            if(peek().value() == '\n') line++;
+            /*
+            let x = "
+            fsdfsdf";
+            */
+            bufa.push_back(eat());
+        }
+
+        if(!peek().has_value()){//we are at eof
+        //but what if theres a start of another string
+        //and then there would still be one quotation missing
+        //but what if theres two quotations missing, making it even
+        //Then thats actually a valid string!!!!!!! LOL
+            std::cerr << "Unterminated String.";
+            exit(EXIT_FAILURE);
+        
+        }
+
+        if(peek(1).value() == '"'){
+            //if next token is closing quote
+            bufa.push_back(eat());
+            TokenType.push_back({ .type = TokenType::STRING, .value=bufa, .theLine=line});
+            eat(); //eat the right quotation
+        }
+        
+    }
+
+    void number(std::string & bufa, std::vector<Token>&TokenType){
+        while(isdigit(peek().value())) bufa.push_back(eat());
+        //breaks out of while if hit '.'
+        if(peek().value() == '.' && isdigit(peek(1).value())){
+            bufa.push_back(eat());
+
+            while(isdigit(peek().value())) bufa.push_back(eat());
+        }
+
+        TokenType.push_back({ .type = TokenType::NUMBER, .value=bufa, .theLine=line});
+    }
 
     size_t idx = 0;
     int line = 1;
