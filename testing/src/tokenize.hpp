@@ -101,14 +101,30 @@ public:
             }
             else if(peek().value() == '='){
                 buf.push_back(eat());
-                TokenType.push_back({ .type = TokenType::EQUAL, .theLine=line});
+                match('=') ? TokenType.push_back({ .type = TokenType::EQUAL_EQUAL, .theLine=line})
+                    : TokenType.push_back({ .type = TokenType::EQUAL, .theLine=line});
                 buf.clear();
+
                 continue;
             }
             else if(peek().value() == '!'){
                 buf.push_back(eat()); //dont need to push back on buffer
                 match('=') ? TokenType.push_back({ .type = TokenType::BANG_EQUAL, .theLine=line})
                     : TokenType.push_back({ .type = TokenType::BANG, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '<'){
+                buf.push_back(eat()); //dont need to push back on buffer
+                match('=') ? TokenType.push_back({ .type = TokenType::LESS_EQUAL, .theLine=line})
+                    : TokenType.push_back({ .type = TokenType::LESS, .theLine=line});
+                buf.clear();
+                continue;
+            }
+            else if(peek().value() == '>'){
+                buf.push_back(eat()); //dont need to push back on buffer
+                match('=') ? TokenType.push_back({ .type = TokenType::GREATER_EQUAL, .theLine=line})
+                    : TokenType.push_back({ .type = TokenType::GREATER, .theLine=line});
                 buf.clear();
                 continue;
             }
