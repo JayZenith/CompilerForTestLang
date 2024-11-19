@@ -43,7 +43,7 @@ public:
         std::vector<Token> TokenType;
         std::string buf = "";
 
-        while(peek().has_value()){ 
+        while(peek().has_value()){ //stops at eof, in which returns null 
             
             if(isalpha(peek().value())){ 
                 while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
@@ -105,6 +105,13 @@ public:
                 buf.clear();
                 continue;
             }
+            else if(peek().value() == '!'){
+                buf.push_back(eat()); //dont need to push back on buffer
+                match('=') ? TokenType.push_back({ .type = TokenType::BANG_EQUAL, .theLine=line})
+                    : TokenType.push_back({ .type = TokenType::BANG, .theLine=line});
+                buf.clear();
+                continue;
+            }
         }
         idx = 0;
         return TokenType;
@@ -113,7 +120,7 @@ public:
 private:
     std::string theContents = "";
 
-    std::optional<char> peek(int offset=0){
+    std::optional<char> peek(int offset=0){ //
         if(theContents[idx+offset]){
             return theContents[idx+offset];
         } else {
@@ -125,7 +132,24 @@ private:
         return theContents[idx++];
     }
 
+    bool match(char expected){
+        //the previous eat() causes peek to already look at expected
+        if(peek().has_value()){ //check for following character, but what if whitespace?
+        //I think we are fine, because we ex out eof, but now specifically check for char
+            if(peek().value() != expected){
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        eat(); //eat the expected char
+        return true;
+    }
+    
+
     size_t idx = 0;
     int line = 1;
+    
 
 };

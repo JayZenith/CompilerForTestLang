@@ -111,7 +111,7 @@ public:
                 eat();
             }
             return NodeStmt { .var = stmt_LET };
-        } else{
+        } else{ 
             return {};
         }
         
@@ -147,5 +147,16 @@ private:
         return TokenType.at(idx++);
     }
 
+    void error(int line, std::string message){
+        report(line, "", message);
+    }
+
+    void report(int line, std::string where, std::string message){
+        std::cerr << "[line " << line << "] Error" << where << ": "
+        << message << std::endl;
+        hadError = true;
+    }
+
     size_t idx = 0;
+    bool hadError = false;
 };
