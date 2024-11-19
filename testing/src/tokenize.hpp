@@ -128,6 +128,21 @@ public:
                 buf.clear();
                 continue;
             }
+            else if(peek().value() == '/'){
+                buf.push_back(eat()); //dont need to push back on buffer
+                if (match('/')){
+                    //need to track newline carefully to also increement line 
+                    //if does equal newline, we continue
+                    while(peek().has_value() && peek().value() != '\n'){
+                        eat();
+                    }
+                   
+                } else {
+                    TokenType.push_back({ .type = TokenType::SLASH, .theLine=line});
+                }
+                buf.clear();
+                continue;
+            }
         }
         idx = 0;
         return TokenType;
