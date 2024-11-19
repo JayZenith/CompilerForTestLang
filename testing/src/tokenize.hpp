@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 enum class TokenType{
     // Single-character TokenType.
@@ -33,6 +34,27 @@ struct Token{
     int theLine; //hold lne where instrruction is 
 };
 
+std::map<std::string, TokenType> HashMap = 
+{ {"leave", TokenType::LEAVE},
+  {"and", TokenType::AND},
+  {"class", TokenType::CLASS},
+  {"else", TokenType::ELSE},
+  {"false", TokenType::FALSE},
+  {"fun", TokenType::FUN},
+  {"for", TokenType::FOR},
+  {"if", TokenType::IF},
+  {"nil", TokenType::NIL},
+  {"or", TokenType::OR},
+  {"print", TokenType::PRINT},
+  {"return", TokenType::RETURN},
+  {"super", TokenType::SUPER},
+  {"this", TokenType::THIS},
+  {"true", TokenType::TRUE},
+  {"let", TokenType::LET},
+  {"var", TokenType::VAR},
+  {"while", TokenType::WHILE},
+};
+
 class Tokenize{
 public:
     Tokenize(std::string&contents)
@@ -44,8 +66,10 @@ public:
         std::string buf = "";
 
         while(peek().has_value()){ //stops at eof, in which returns null 
-            
+            //assume lexeme starting with letter or underscore is an identifier 
             if(isalpha(peek().value())){ 
+                identifier(buf, TokenType);
+                /*
                 while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
                     buf.push_back(eat()); //push onto buffer and increment 
                 }
@@ -62,6 +86,9 @@ public:
                     buf.clear();
                     continue;
                 }
+                */
+               buf.clear();
+               continue;
             }
             
             else if(isspace(peek().value())){ //detects newlines
@@ -256,6 +283,29 @@ private:
         }
 
         TokenType.push_back({ .type = TokenType::NUMBER, .value=bufa, .theLine=line});
+    }
+
+
+
+    void identifier(std::string & bufa, std::vector<Token>&TokenType){
+        while(peek().has_value() && isalnum(peek().value())){ //will figure out the start of a statement later on
+            bufa.push_back(eat()); //push onto bufafer and increment 
+        }
+        /*
+        if(bufa == "leave"){
+            TokenType.push_back({ .type = TokenType::LEAVE, .theLine=line});
+        } else if(bufa == "let"){
+            TokenType.push_back({ .type = TokenType::LET, .theLine=line});
+        } else { //.value will hold the idnetifier symbol 
+            TokenType.push_back({ .type = TokenType::IDENTIFIER, .value=bufa, .theLine=line });
+        }
+        */
+        auto iter = HashMap.find(bufa);
+        if (iter != HashMap.end()){
+            TokenType.push_back({ .type = iter->second, .theLine=line});
+        } else {
+            TokenType.push_back({ .type = TokenType::IDENTIFIER, .value=bufa, .theLine=line });
+        }
     }
 
     size_t idx = 0;
