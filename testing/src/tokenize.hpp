@@ -11,14 +11,13 @@ enum class TokenType{
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,  SEMICOLON, 
     DOT, MINUS, PLUS, SLASH, STAR, COMMA,
 
-
     // One or two character TokenType.
     BANG, BANG_EQUAL,
     EQUAL, EQUAL_EQUAL,
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
 
-    //literals.
+    //literals.D
     NUMBER, IDENTIFIER, STRING,
 
     // Keywords.
@@ -29,9 +28,8 @@ enum class TokenType{
 
 struct Token{
     TokenType type;
-
-    std::optional<std::string> value {}; //holds literal
-    int theLine; //hold lne where instrruction is 
+    std::optional<std::string> value {}; 
+    int theLine; //hold lne where instruction is 
 };
 
 std::map<std::string, TokenType> HashMap = 

@@ -7,30 +7,28 @@ struct NodeExprIntLit{
     Token int_lit;
 };
 
-struct NodeExprIDENTIFIER{
-    Token IDENTIFIER;
+struct NodeExprIdent{
+    Token ident;
 };
 
 struct NodeExpr{ //[expr] is either int_lit or IDENTIFIER
-    //Token NUMBER;
-    std::variant<NodeExprIntLit, NodeExprIDENTIFIER> var;
+    std::variant<NodeExprIntLit, NodeExprIdent> var;
 };
 
-struct NodeStmtLEAVE{  
+struct NodeStmtLeave{  
     NodeExpr expr;
 };
 
-struct NodeStmtLET{ 
-    Token IDENTIFIER;
+struct NodeStmtLet{ 
+    Token ident;
     NodeExpr expr;
 };
 
-struct NodeStmt{ 
-    std::variant<NodeStmtLEAVE, NodeStmtLET> var;
+struct NodeStmt{  
+    std::variant<NodeStmtLeave, NodeStmtLet> var;
 };
 
 struct NodeRoot{  //[program]
-    //NodeExpr expr;
     std::vector<NodeStmt> stmts; //[statements]
 
 };
@@ -43,13 +41,13 @@ public:
         {}
 
     //Can be either expr or IDENTIFIER 
-    //so NodeExpr is a variant that holds specifically either
-    std::optional<NodeExpr> parse_expr(){
+    //so getting the terminals 
+    std::optional<NodeExpr> parse_expr(){ 
         if(peek().value().type == TokenType::NUMBER){
-            return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } };
+            return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } }; //eating token
         }
         else if(peek().value().type == TokenType::IDENTIFIER){
-            return NodeExpr{ .var = NodeExprIDENTIFIER { .IDENTIFIER = eat() } };
+            return NodeExpr{ .var = NodeExprIdent { .ident = eat() } };
         }
         else {
             return {};
@@ -59,48 +57,36 @@ public:
     //NodeStmt is a variant of the instruction types 
     //
     std::optional<NodeStmt> parse_stmt(){
-        //check if a LEAVE(expr);
         if(peek().value().type == TokenType::LEAVE && peek(1).has_value() 
             && peek(1).value().type == TokenType::LEFT_PAREN){
             eat();
             eat();
-            NodeStmtLEAVE stmt_LEAVE;
-            /*
-            struct NodeStmtLEAVE{  
-                NodeExpr expr;
-            };
-            */
+            NodeStmtLeave stmt_leave; 
+        
             if(auto node_expr = parse_expr()){
-                stmt_LEAVE = {.expr = node_expr.value()};
-                //std::cout << "hi";
+                stmt_leave = {.expr = node_expr.value()};
             }
             
-            //should eat to move index to next peek 
-            eat();
+            //should eat the number or identifier, NO ITS EATEN FROM parse_expr
+            //eat();
             if(peek().has_value() && peek().value().type == TokenType::RIGHT_PAREN){ 
                 eat();
             }
             if(peek().has_value() && peek().value().type == TokenType::SEMICOLON){
                 eat();
             }
-            return NodeStmt { .var = stmt_LEAVE };
+            return NodeStmt { .var = stmt_leave };
 
         } else if (peek().has_value() && peek().value().type == TokenType::LET &&
             peek(1).has_value() && peek(1).value().type == TokenType::IDENTIFIER && 
             peek(2).has_value() && peek(2).value().type == TokenType::EQUAL){
             eat(); //consume LET
-            auto stmt_LET = NodeStmtLET { .IDENTIFIER = eat() }; //consume IDENTIFIER 
+            auto stmt_let = NodeStmtLet { .ident = eat() }; //consume IDENTIFIER 
             eat(); //consume EQUAL 
-            /*
-            struct NodeStmtLET{ 
-                Token IDENTIFIER;
-                NodeExpr expr;
-            };
-            I stored IDENTIFIERifier but now parsing for NUMBER 
-            */
+            
             if (auto expr = parse_expr()){
-                stmt_LET.expr = expr.value();
-                eat(); //dont we eat to look for SEMICOLON?
+                stmt_let.expr = expr.value(); //had to .expr because has two data members in struct 
+                //eat(); //dont we eat to look for SEMICOLON? no WE ATE DURING PARSING
             } else { //not an int val or IDENTIFIER?
                 std::cerr << "Invalid expression" << std::endl;
                 exit(EXIT_FAILURE);
@@ -110,7 +96,7 @@ public:
                 //exit(EXIT_FAILURE);
                 eat();
             }
-            return NodeStmt { .var = stmt_LET };
+            return NodeStmt { .var = stmt_let };
         } else{ 
             return {};
         }
@@ -119,11 +105,12 @@ public:
 
  
     std::optional<NodeRoot> parse_prog(){ 
-        NodeRoot prog;
+        NodeRoot prog; //vector of stmts which holds variants
         while (peek().has_value()){ 
-           
             if(auto stmt = parse_stmt()){
                 prog.stmts.push_back(stmt.value());
+                std::cout << "hi";
+
 
             } else {
                 std::cerr << "Invalid statement" << std::endl;

@@ -13,21 +13,20 @@ public:
         struct ExprVisitor{
             Generator* gen;
             
-
             void operator()(const NodeExprIntLit& expr_int_lit){
                 gen->strm << "    mov rax, " << expr_int_lit.int_lit.value.value() << "\n";
                 gen->push("rax");
                 //gen->strm << "    push rax\n"; 
             }
 
-            void operator()(const NodeExprIDENTIFIER& expr_IDENTIFIER){
+            void operator()(const NodeExprIdent& expr_ident){
                 /*
                 if(!(gen->varsMap.find(expr_IDENTIFIER.IDENTIFIER.value.value()) == gen->varsMap.end())){
                     std::cerr << "Undeclared IDENTIFIERifier: " << expr_IDENTIFIER.IDENTIFIER.value.value() << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 */
-                const auto& var = gen->varsMap.at(expr_IDENTIFIER.IDENTIFIER.value.value());
+                const auto& var = gen->varsMap.at(expr_ident.ident.value.value());
                 std::stringstream offset {};
                 offset << "QWORD [rsp + " << (gen->stackSize - var.stackLoc - 1) * 8 << "]\n";
                 gen->push(offset.str());
@@ -45,8 +44,8 @@ public:
         struct StmtVisitor{
             Generator* gen;
             //will call operator based on correct parameter 
-            void operator()(const NodeStmtLEAVE& stmt_LEAVE) const {
-                gen->gen_expr(stmt_LEAVE.expr); //calls function to further advance assembly
+            void operator()(const NodeStmtLeave& stmt_leave) const {
+                gen->gen_expr(stmt_leave.expr); //calls function to further advance assembly
                 gen->strm << "    mov rax, 60\n";
                 gen->pop("rdi");
                 //gen->strm << "    pop rdi\n";
@@ -54,7 +53,7 @@ public:
 
             }
 
-            void operator()(const NodeStmtLET& stmt_LET){
+            void operator()(const NodeStmtLet& stmt_let){
                 
                 /*
                 if(gen->varsMap.contains(stmt_LET.IDENTIFIER.value.value())){
@@ -63,12 +62,12 @@ public:
                 }
                 */
                 //put in map
-                gen->varsMap.insert({stmt_LET.IDENTIFIER.value.value(), Var{.stackLoc = gen->stackSize} });
+                gen->varsMap.insert({stmt_let.ident.value.value(), Var{.stackLoc = gen->stackSize} });
                 //put in stack
                 for (auto i : gen->varsMap)
                 std::cout << "\nyo: " << i.first << "\n" << std::endl;
                 
-                gen->gen_expr(stmt_LET.expr);
+                gen->gen_expr(stmt_let.expr);
                
             }
         };
