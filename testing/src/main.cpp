@@ -37,14 +37,17 @@ int main(int argc, char* argv[]){
    //std::cout << "hi";
    //std::cout << expr.value().value().int_lit.value();
    std::cout << "hi";
+
+   
    Generator generator(prog.value());
 
    
    std::fstream out("test.asm", std::ios::out);
    out << generator.generate_prog();
 
+    
 
-   //system("nasm -felf64 test.asm");
+
 
   
    

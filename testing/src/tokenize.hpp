@@ -17,7 +17,7 @@ enum class TokenType{
     GREATER, GREATER_EQUAL,
     LESS, LESS_EQUAL,
 
-    //literals.D
+    //literals.
     NUMBER, IDENTIFIER, STRING,
 
     // Keywords.

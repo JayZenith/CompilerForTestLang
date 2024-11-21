@@ -7,12 +7,16 @@ struct NodeExprIntLit{
     Token int_lit;
 };
 
+struct NodeExprStringLit{
+    Token string_lit;
+};
+
 struct NodeExprIdent{
     Token ident;
 };
 
 struct NodeExpr{ //[expr] is either int_lit or IDENTIFIER
-    std::variant<NodeExprIntLit, NodeExprIdent> var;
+    std::variant<NodeExprIntLit, NodeExprIdent, NodeExprStringLit> var;
 };
 
 struct NodeStmtLeave{  
@@ -35,16 +39,17 @@ struct NodeRoot{  //[program]
 
 class Parser{
 public:
-
     Parser(std::vector<Token> &x)
         : TokenType(std::move(x))
         {}
 
-    //Can be either expr or IDENTIFIER 
-    //so getting the terminals 
+    //obtaining the terminals 
     std::optional<NodeExpr> parse_expr(){ 
         if(peek().value().type == TokenType::NUMBER){
             return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } }; //eating token
+        }
+        else if(peek().value().type == TokenType::STRING){
+            return NodeExpr{ .var = NodeExprStringLit { .string_lit = eat() } }; //eating token
         }
         else if(peek().value().type == TokenType::IDENTIFIER){
             return NodeExpr{ .var = NodeExprIdent { .ident = eat() } };
@@ -55,7 +60,6 @@ public:
     }
     
     //NodeStmt is a variant of the instruction types 
-    //
     std::optional<NodeStmt> parse_stmt(){
         if(peek().value().type == TokenType::LEAVE && peek(1).has_value() 
             && peek(1).value().type == TokenType::LEFT_PAREN){
@@ -64,11 +68,9 @@ public:
             NodeStmtLeave stmt_leave; 
         
             if(auto node_expr = parse_expr()){
-                stmt_leave = {.expr = node_expr.value()};
+                stmt_leave = {.expr = node_expr.value()}; //will eat() as well
             }
             
-            //should eat the number or identifier, NO ITS EATEN FROM parse_expr
-            //eat();
             if(peek().has_value() && peek().value().type == TokenType::RIGHT_PAREN){ 
                 eat();
             }
@@ -92,8 +94,6 @@ public:
                 exit(EXIT_FAILURE);
             }
             if (peek().has_value() && peek().value().type == TokenType::SEMICOLON){
-                //std::cerr << "Expected ;" << std::endl;
-                //exit(EXIT_FAILURE);
                 eat();
             }
             return NodeStmt { .var = stmt_let };
@@ -109,10 +109,8 @@ public:
         while (peek().has_value()){ 
             if(auto stmt = parse_stmt()){
                 prog.stmts.push_back(stmt.value());
-                std::cout << "hi";
-
-
-            } else {
+                //std::cout << "hi";
+            } else { //does not match current instructions supported 
                 std::cerr << "Invalid statement" << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -130,9 +128,7 @@ private:
         }
     }
 
-    Token eat(){
-        return TokenType.at(idx++);
-    }
+    Token eat(){ return TokenType.at(idx++); }
 
     void error(int line, std::string message){
         report(line, "", message);
