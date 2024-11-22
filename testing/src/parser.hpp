@@ -4,18 +4,21 @@
 #include "./tokenize.hpp"
 #include "./arena.hpp"
 
-struct NodeExprIntLit{
+//Terminals dont need a pointer 
+struct NodeTermIntLit{
     Token int_lit;
 };
 
-struct NodeExprStringLit{
+struct NodeTermStringLit{
     Token string_lit;
 };
 
-struct NodeExprIdent{
+struct NodeTermIdent{
     Token ident;
 };
 
+//Need to allude its formal definition as we use in BineExprAdd
+//and BInExprMulti which they are used in NodeBinExpr 
 struct NodeExpr;
 
 //without the pointers, we would have to know the exact size of the 
@@ -27,17 +30,25 @@ struct BinExprAdd{
     NodeExpr* rhs;
 };
 
-struct BinExprMulti{    
-    NodeExpr* lhs;
-    NodeExpr* rhs;
-};
+// struct BinExprMulti{    
+//     NodeExpr* lhs;
+//     NodeExpr* rhs;
+// };
+
+// struct NodeBinExpr{
+//     std::variant<BinExprAdd*, BinExprMulti*> var;
+// };
 
 struct NodeBinExpr{
-    std::variant<BinExprAdd*, BinExprMulti*> var;
+    BinExprAdd* add;
+};
+
+struct NodeTerm{
+    std::variant<NodeTermIntLit*, NodeTermIdent*, NodeTermStringLit*> var;
 };
 
 struct NodeExpr{ //[expr] is either int_lit or IDENTIFIER
-    std::variant<NodeExprIntLit*, NodeExprIdent*, NodeExprStringLit*, NodeBinExpr*> var;
+    std::variant<NodeTerm*, NodeBinExpr*> var;
 };
 
 
@@ -66,36 +77,97 @@ public:
         allocator(1024 * 1024 * 4) //the arena 
         {}
 
-    //obtaining the terminals 
-    std::optional<NodeExpr*> parse_expr(){ 
+    std::optional<NodeBinExpr*> parse_bin_expr(){
+        if(auto lhs = parse_expr()){
+            auto bin_expr = allocator.alloc<NodeBinExpr>();
+            if(peek().has_value() && peek().value().type == TokenType::PLUS){
+                auto bin_expr_add = allocator.alloc<BinExprAdd>();
+                bin_expr_add->lhs = lhs.value();
+                eat(); //consume addition token
+                //eat();
+                if(auto rhs = parse_expr()){
+                    bin_expr_add->rhs = rhs.value();
+                    bin_expr->add = bin_expr_add;
+                    return bin_expr;
+                } else {
+                    std::cerr << "check rhs" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            } else {
+                std::cerr << "check lhs" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            
+        } else {
+            return {};
+        }
+    }
+
+
+    std::optional<NodeTerm*> parse_term(){
         if(peek().value().type == TokenType::NUMBER){
-            auto expr_int_lit = allocator.alloc<NodeExprIntLit>(); //allocate within the arena and get a pointer to the type
-            expr_int_lit->int_lit = eat(); //must -> since its a pointer to the type 
-            auto expr = allocator.alloc<NodeExpr>();
-            expr->var = expr_int_lit; 
-            return expr;
+            auto term_int_lit = allocator.alloc<NodeTermIntLit>(); //alloc space of this struct within arena 
+            term_int_lit->int_lit = eat(); //must -> since its a pointer to the type 
+            auto term= allocator.alloc<NodeTerm>();
+            term->var = term_int_lit; 
+            return term;
             //return NodeExpr { .var = node_expr_int_lit };
             //return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } }; //eating token
         }
         else if(peek().value().type == TokenType::STRING){
-            auto expr_string_lit = allocator.alloc<NodeExprStringLit>();
-            expr_string_lit->string_lit = eat();
-            auto expr = allocator.alloc<NodeExpr>();
-            expr->var = expr_string_lit;
-            return expr;
+            auto term_string_lit = allocator.alloc<NodeTermStringLit>();
+            term_string_lit->string_lit = eat();
+            auto term = allocator.alloc<NodeTerm>();
+            term->var = term_string_lit;
+            return term;
             //return NodeExpr{ .var = NodeExprStringLit { .string_lit = eat() } }; //eating token
         }
         else if(peek().value().type == TokenType::IDENTIFIER){
-            auto expr_ident = allocator.alloc<NodeExprIdent>();
-            expr_ident->ident = eat();
-            auto expr = allocator.alloc<NodeExpr>();
-            expr->var = expr_ident;
-            return expr;
+            auto term_ident = allocator.alloc<NodeTermIdent>();
+            term_ident->ident = eat();
+            auto term = allocator.alloc<NodeTerm>();
+            term->var = term_ident;
+            return term;
             //return NodeExpr{ .var = NodeExprIdent { .ident = eat() } };
-        }
-        else {
+        } else {
             return {};
         }
+    }
+
+    //obtaining the terminals 
+    std::optional<NodeExpr*> parse_expr(){ 
+        if(auto term = parse_term()){
+            if(peek().has_value() && peek().value().type == TokenType::PLUS){
+                auto bin_expr = allocator.alloc<NodeBinExpr>();
+                //if(peek().has_value() && peek().value().type == TokenType::PLUS){
+                auto bin_expr_add = allocator.alloc<BinExprAdd>();
+                auto lhs_expr = allocator.alloc<NodeExpr>();
+                lhs_expr->var = term.value();
+                bin_expr_add->lhs = lhs_expr;
+                eat(); //consume addition token
+                //eat();
+                if(auto rhs = parse_expr()){
+                    bin_expr_add->rhs = rhs.value();
+                    bin_expr->add = bin_expr_add;
+                    auto expr = allocator.alloc<NodeExpr>();
+                    expr->var = bin_expr;
+                    return expr;
+                } else {
+                    std::cerr << "check rhs" << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+            //} //otherwise
+            else {
+                auto expr = allocator.alloc<NodeExpr>();
+                expr->var = term.value();
+                return expr; //just return the term
+            }
+        } else {
+            return {};
+        }
+        
+        
     }
     
     //NodeStmt is a variant of the instruction types 
@@ -139,7 +211,7 @@ public:
                 //stmt_let.expr = expr.value(); //had to .expr because has two data members in struct 
                 //eat(); //dont we eat to look for SEMICOLON? no WE ATE DURING PARSING
             } else { //not an int val or IDENTIFIER?
-                std::cerr << "Invalid expression" << std::endl;
+                std::cerr << "Invalid parsed expression" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if (peek().has_value() && peek().value().type == TokenType::SEMICOLON){
@@ -158,6 +230,8 @@ public:
  
     std::optional<NodeRoot> parse_prog(){ 
         NodeRoot prog; //vector of stmts which holds variants
+        std::cout << "hi";
+
         while (peek().has_value()){ 
             if(auto stmt = parse_stmt()){
                 prog.stmts.push_back(stmt.value());

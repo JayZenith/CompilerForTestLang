@@ -10,35 +10,50 @@ public:
         : root(std::move(x))
         {}
 
-    void gen_expr(const NodeExpr* expr) {
-        struct ExprVisitor{
+    void gen_term(const NodeTerm* term){
+        struct TermVisitor{
             Generator* gen;
-            
-            void operator()(const NodeExprIntLit* expr_int_lit){
-                gen->strm << "    mov rax, " << expr_int_lit->int_lit.value.value() << "\n";
+            void operator()(const NodeTermIntLit* term_int_lit) const {
+                gen->strm << "    mov rax, " << term_int_lit->int_lit.value.value() << "\n";
                 gen->push("rax");
             }
 
-            void operator()(const NodeExprStringLit* expr_string_lit){
-                //auto test = expr_string_lit.string_lit.value.value();
-                //std::cout << "out";
-                gen->strm << "section .data\n    theString db " << "'" <<expr_string_lit->string_lit.value.value() << "', 0Ah" << "\n";
+            void operator()(const NodeTermStringLit* term_string_lit) const {
+                gen->strm << "section .data\n    theString db " << "'" << term_string_lit->string_lit.value.value() << "', 0Ah" << "\n";
                 gen->strm << "section .text\n    global _start" << "\n" << "_start:\n";
                 gen->strm << "    mov eax, 4\n    mov ebx, 1\n    lea ecx, [theString]\n    mov edx, 13\n";
                 gen->strm << "    int 0x80\n";
             }
 
-            void operator()(const NodeExprIdent* expr_ident){
-                //std::cout << "of";
-                const auto& var = gen->varsMap.at(expr_ident->ident.value.value());
+            void operator()(const NodeTermIdent* term_ident) const {
+                const auto& var = gen->varsMap.at(term_ident->ident.value.value());
                
                 std::stringstream offset {};
                 offset << "QWORD [rsp + " << (gen->stackSize - var.stackLoc - 1) * 8 << "]\n";
                 gen->push(offset.str());
             }
+        };
+        TermVisitor visitor({.gen = this});
+        std::visit(visitor, term->var);
+    }
+
+    void gen_expr(const NodeExpr* expr) {
+        struct ExprVisitor{
+            Generator* gen;
+            
+            void operator()(const NodeTerm* term) const {
+                gen->gen_term(term);
+            }
 
             void operator()(const NodeBinExpr* bin_expr) const {
-                assert(false); //not implemented 
+                gen->gen_expr(bin_expr->add->lhs);
+                gen->gen_expr(bin_expr->add->rhs);
+                gen->pop("rax");
+                gen->pop("rbx");
+                gen->strm << "    add rax, rbx\n";
+                gen->push("rax");
+
+                //assert(false); //not implemented 
             }
         };
 

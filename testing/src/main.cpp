@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
     /*
     if (argc < 2){
         std::cout << "here" <<  argv[1] << std::endl;
-        std::cerr << "Incorrect usage. Correct use is: " << std::endl;
+        std::cerr << "Incorrect usagde. Correct use is: " << std::endl;
         std::cerr << "test <../input.test>" << std::endl;
         return EXIT_FAILURE;
     }
