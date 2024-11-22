@@ -10,6 +10,7 @@
 #include "./generate.hpp"
 
 
+
 void readFile(std::string&contents, std::string arg){
     std::fstream input(arg, std::ios::in);
     std::stringstream strm;
