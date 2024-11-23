@@ -73,17 +73,18 @@ struct NodeRoot{  //[program]
 class Parser{
 public:
     Parser(std::vector<Token> &x)
-        : TokenType(std::move(x)),
+        : theTokens(std::move(x)),
         allocator(1024 * 1024 * 4) //the arena 
         {}
 
     std::optional<NodeBinExpr*> parse_bin_expr(){
         if(auto lhs = parse_expr()){
             auto bin_expr = allocator.alloc<NodeBinExpr>();
-            if(peek().has_value() && peek().value().type == TokenType::PLUS){
+            //if(peek().has_value() && peek().value().type == TokenType::PLUS){
+            if(try_eat(TokenType::PLUS)){
                 auto bin_expr_add = allocator.alloc<BinExprAdd>();
                 bin_expr_add->lhs = lhs.value();
-                eat(); //consume addition token
+                //eat(); //consume addition token, ATE DURING try_eat
                 //eat();
                 if(auto rhs = parse_expr()){
                     bin_expr_add->rhs = rhs.value();
@@ -105,26 +106,32 @@ public:
 
 
     std::optional<NodeTerm*> parse_term(){
-        if(peek().value().type == TokenType::NUMBER){
+        //if(peek().value().type == TokenType::NUMBER){
+        if(auto aterm = try_eat(TokenType::NUMBER)){
             auto term_int_lit = allocator.alloc<NodeTermIntLit>(); //alloc space of this struct within arena 
-            term_int_lit->int_lit = eat(); //must -> since its a pointer to the type 
+            //term_int_lit->int_lit = eat(); //must -> since its a pointer to the type 
+            term_int_lit->int_lit = aterm.value(); //must -> since its a pointer to the type 
             auto term= allocator.alloc<NodeTerm>();
             term->var = term_int_lit; 
             return term;
             //return NodeExpr { .var = node_expr_int_lit };
             //return NodeExpr{ .var = NodeExprIntLit { .int_lit = eat() } }; //eating token
         }
-        else if(peek().value().type == TokenType::STRING){
+        //else if(peek().value().type == TokenType::STRING){
+            if(auto aterm = try_eat(TokenType::STRING)){
             auto term_string_lit = allocator.alloc<NodeTermStringLit>();
-            term_string_lit->string_lit = eat();
+            //term_string_lit->string_lit = eat();
+            term_string_lit->string_lit = aterm.value();
             auto term = allocator.alloc<NodeTerm>();
             term->var = term_string_lit;
             return term;
             //return NodeExpr{ .var = NodeExprStringLit { .string_lit = eat() } }; //eating token
         }
-        else if(peek().value().type == TokenType::IDENTIFIER){
+        //else if(peek().value().type == TokenType::IDENTIFIER){
+        else if(auto aterm = try_eat(TokenType::IDENTIFIER)){
             auto term_ident = allocator.alloc<NodeTermIdent>();
-            term_ident->ident = eat();
+            //term_ident->ident = eat();
+            term_ident->ident = aterm.value();
             auto term = allocator.alloc<NodeTerm>();
             term->var = term_ident;
             return term;
@@ -184,12 +191,15 @@ public:
                 stmt_leave->expr = node_expr.value();
             }
             
-            if(peek().has_value() && peek().value().type == TokenType::RIGHT_PAREN){ 
-                eat();
-            }
-            if(peek().has_value() && peek().value().type == TokenType::SEMICOLON){
-                eat();
-            }
+            // if(peek().has_value() && peek().value().type == TokenType::RIGHT_PAREN){ 
+            //     eat();
+            // }
+            try_eat(TokenType::RIGHT_PAREN);
+            // if(peek().has_value() && peek().value().type == TokenType::SEMICOLON){
+            //     eat();
+            // }
+            try_eat(TokenType::SEMICOLON);
+
             auto stmt = allocator.alloc<NodeStmt>();
             stmt->var = stmt_leave;
             return stmt;
@@ -245,16 +255,17 @@ public:
     }
 
 private:
-    std::vector<Token> TokenType;
+    std::vector<Token> theTokens;
+
     std::optional<Token> peek(int offset=0){
-        if(idx + offset > TokenType.size() - 1){
+        if(idx + offset > theTokens.size() - 1){
             return {};
         } else { 
-            return TokenType.at(idx+offset);
+            return theTokens.at(idx+offset);
         }
     }
 
-    Token eat(){ return TokenType.at(idx++); }
+    Token eat(){ return theTokens.at(idx++); }
 
     void error(int line, std::string message){
         report(line, "", message);
@@ -265,6 +276,24 @@ private:
         << message << std::endl;
         hadError = true;
     }
+
+    Token try_eat(TokenType type, std::string errMsg){
+        if(peek().has_value() && peek().value().type == type){
+            return eat();
+        } else {
+            std::cerr << errMsg << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    std::optional<Token> try_eat(TokenType type){
+        if(peek().has_value() && peek().value().type == type){
+            return eat();
+        } else {
+            return {};
+        }
+    }
+
 
     size_t idx = 0;
     bool hadError = false;
